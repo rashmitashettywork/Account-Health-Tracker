@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Health Tracker — Rashmita Shetty</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f1117;color:#e8e6e3;padding:2rem 1.5rem;min-height:100vh}
+.t{max-width:1100px;margin:0 auto}
+.hdr{margin-bottom:1.5rem}
+.hdr-title{font-size:22px;font-weight:600;color:#f0ede8;margin-bottom:4px}
+.hdr-sub{font-size:13px;color:#8b8986}
+.fw{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:1.5rem}
+.fw-step{background:#1c1f2a;border-radius:10px;padding:0.6rem 0.5rem;text-align:center;border:0.5px solid #2a2d3a}
+.fw-n{font-size:10px;color:#6b6966;margin-bottom:2px}
+.fw-nm{font-size:12px;font-weight:500;color:#c8c4be}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.5rem}
+.cat-card{border-radius:12px;padding:1rem 1.1rem;cursor:pointer;border:2px solid transparent;transition:all 0.15s}
+.cat-card:hover{opacity:0.85}
+.cat-card.selected{border-color:currentColor}
+.cat-hv{background:#0d2847;color:#60a5fa}
+.cat-st{background:#0d2e1e;color:#4ade80}
+.cat-ar{background:#2e1e08;color:#fb923c}
+.cat-cr{background:#2e0d0d;color:#f87171}
+.cat-label{font-size:11px;font-weight:500;margin-bottom:4px;opacity:0.7}
+.cat-count{font-size:28px;font-weight:600;margin-bottom:2px}
+.cat-name{font-size:12px;font-weight:500}
+.filter-bar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:0.5px solid #2a2d3a;background:transparent;color:#8b8986;cursor:pointer;transition:all 0.15s}
+.filter-btn:hover{background:#1c1f2a}
+.filter-btn.active{background:#0d2847;color:#60a5fa;border-color:#1d4ed8}
+.legend{display:flex;gap:16px;align-items:center;background:#1c1f2a;border-radius:10px;padding:8px 14px;margin-bottom:10px;flex-wrap:wrap;border:0.5px solid #2a2d3a}
+.legend-title{font-size:11px;font-weight:500;color:#8b8986;margin-right:4px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#8b8986}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-divider{width:1px;height:14px;background:#2a2d3a}
+.ld-g{background:#22c55e}.ld-a{background:#f59e0b}.ld-r{background:#ef4444}.ld-n{background:#4b5563}
+.accts{width:100%;border-collapse:collapse;margin-bottom:1.5rem}
+.accts th{font-size:11px;font-weight:500;color:#6b6966;text-align:left;padding:0 12px 8px;border-bottom:0.5px solid #2a2d3a;white-space:nowrap}
+.accts td{font-size:13px;color:#c8c4be;padding:10px 12px;border-bottom:0.5px solid #1c1f2a;vertical-align:middle}
+.accts tr.acct-row{cursor:pointer;transition:background 0.15s}
+.accts tr.acct-row:hover td{background:#1c1f2a}
+.accts tr.acct-row.active td{background:#0d2847}
+.accts tr.hidden{display:none}
+.pill{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.p-hv{background:#0d2847;color:#60a5fa}
+.p-st{background:#0d2e1e;color:#4ade80}
+.p-ar{background:#2e1e08;color:#fb923c}
+.p-cr{background:#2e0d0d;color:#f87171}
+.dots{display:flex;gap:4px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%}
+.dg{background:#22c55e}.da{background:#f59e0b}.dr{background:#ef4444}.dn{background:#4b5563}
+.panel{display:none;background:#1c1f2a;border:0.5px solid #2a2d3a;border-radius:14px;padding:1.25rem;margin-bottom:1.5rem}
+.panel.open{display:block}
+.panel-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1rem;gap:12px}
+.panel-title{font-size:16px;font-weight:600;color:#f0ede8;margin-bottom:3px}
+.panel-meta{font-size:12px;color:#8b8986}
+.close-btn{font-size:12px;color:#8b8986;cursor:pointer;background:none;border:0.5px solid #2a2d3a;padding:5px 12px;border-radius:20px;display:flex;align-items:center;gap:4px;white-space:nowrap;flex-shrink:0;transition:all 0.15s}
+.close-btn:hover{background:#2a2d3a;color:#c8c4be}
+.tabs{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
+.tab{font-size:12px;font-weight:500;padding:6px 14px;border-radius:20px;border:0.5px solid #2a2d3a;background:transparent;color:#8b8986;cursor:pointer;transition:all 0.15s}
+.tab:hover{background:#2a2d3a}
+.tab.active{background:#0d2847;color:#60a5fa;border-color:#1d4ed8}
+.tc{display:none}.tc.active{display:block}
+.layer{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:1rem}
+.card{background:#141720;border-radius:10px;padding:0.875rem 1rem;border:0.5px solid #2a2d3a}
+.card-label{font-size:11px;font-weight:500;color:#6b6966;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em}
+.card-val{font-size:22px;font-weight:600;color:#f0ede8;margin-bottom:2px}
+.card-sub{font-size:12px;color:#6b6966}
+.bar-wrap{margin-top:8px}
+.bar-track{height:5px;background:#2a2d3a;border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px}
+.bg-g{background:#22c55e}.bg-a{background:#f59e0b}.bg-r{background:#ef4444}
+.c-g{color:#4ade80}.c-a{color:#fb923c}.c-r{color:#f87171}.c-b{color:#60a5fa}
+.sec-label{font-size:11px;font-weight:500;color:#6b6966;text-transform:uppercase;letter-spacing:0.04em;margin:1rem 0 8px}
+.ticket-list{display:flex;flex-direction:column;gap:6px}
+.ticket{background:#141720;border-radius:10px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px;border:0.5px solid #2a2d3a}
+.ticket-info{font-size:12px;color:#c8c4be;margin-bottom:2px}
+.ticket-cat{font-size:11px;color:#6b6966}
+.ticket-age{font-size:11px;font-weight:500;white-space:nowrap}
+.age-ok{color:#4ade80}.age-warn{color:#fb923c}.age-risk{color:#f87171}
+.eng-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:1rem}
+.eng-item{background:#141720;border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;border:0.5px solid #2a2d3a}
+.eng-label{font-size:12px;color:#6b6966;flex:1}
+.eng-val{font-size:12px;font-weight:500}
+.sh{background:#141720;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:0.5px solid #2a2d3a}
+.sh-name{font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:6px}
+.sh-row{display:flex;gap:6px;margin-bottom:5px;align-items:flex-start}
+.sh-tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;white-space:nowrap;margin-top:1px;flex-shrink:0}
+.tag-g{background:#0d2e1e;color:#4ade80}
+.tag-r{background:#2e0d0d;color:#f87171}
+.tag-b{background:#0d2847;color:#60a5fa}
+.sh-text{font-size:12px;color:#8b8986;line-height:1.5}
+.nrr-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.ren-bar{background:#141720;border-radius:10px;padding:1rem;margin-bottom:1rem;border:0.5px solid #2a2d3a}
+.ren-label{font-size:12px;color:#6b6966;margin-bottom:6px}
+.ren-track{height:6px;background:#2a2d3a;border-radius:3px;overflow:hidden;margin-bottom:4px}
+.ren-fill{height:100%;border-radius:3px}
+.ren-dates{display:flex;justify-content:space-between;font-size:11px;color:#6b6966}
+.wins-list{display:flex;flex-direction:column;gap:8px}
+.win{background:#141720;border-radius:10px;padding:8px 10px;display:flex;gap:10px;align-items:flex-start;border:0.5px solid #2a2d3a}
+.win-text{font-size:12px;color:#c8c4be;line-height:1.5;margin-bottom:3px}
+.wt{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;display:inline-block}
+.wt-n{background:#2e1e08;color:#fb923c}.wt-i{background:#0d2e1e;color:#4ade80}
+.exp-list{display:flex;flex-direction:column;gap:8px}
+.exp{background:#141720;border-radius:10px;padding:10px 12px;border:0.5px solid #2a2d3a}
+.exp-title{font-size:13px;font-weight:500;color:#f0ede8;margin-bottom:3px}
+.exp-detail{font-size:12px;color:#6b6966;line-height:1.5}
+.hyp-box{background:#0d2847;border-left:3px solid #1d4ed8;border-radius:10px;padding:0.875rem 1rem;margin-bottom:10px}
+.hyp-label{font-size:11px;font-weight:500;color:#60a5fa;margin-bottom:4px}
+.hyp-text{font-size:13px;color:#93c5fd;line-height:1.6}
+.act-box{border-radius:10px;padding:0.875rem 1rem;margin-bottom:10px}
+.act-grow{background:#0d2e1e;border-left:3px solid #22c55e}
+.act-amber{background:#2e1e08;border-left:3px solid #f59e0b}
+.act-red{background:#2e0d0d;border-left:3px solid #ef4444}
+.act-label{font-size:11px;font-weight:500;margin-bottom:4px}
+.al-g{color:#4ade80}.al-a{color:#fb923c}.al-r{color:#f87171}
+.at-g{font-size:13px;color:#86efac;line-height:1.6}
+.at-a{font-size:13px;color:#fdba74;line-height:1.6}
+.at-r{font-size:13px;color:#fca5a5;line-height:1.6}
+.sp{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-bottom:8px}
+.sp-grow{background:#0d2e1e;color:#4ade80}
+.sp-amber{background:#2e1e08;color:#fb923c}
+.sp-red{background:#2e0d0d;color:#f87171}
+.sp-blue{background:#0d2847;color:#60a5fa}
+.no-tickets{font-size:12px;color:#6b6966;padding:4px 0}
+.placeholder-text{font-size:13px;color:#6b6966;padding:1rem 0}
+a{color:#60a5fa;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="t">
+  <div class="hdr">
+    <p class="hdr-title">Account health tracker</p>
+    <p class="hdr-sub">10 accounts · Monitor → Detect → Investigate → Hypothesise → Act</p>
+  </div>
+
+  <div class="fw">
+    <div class="fw-step"><div class="fw-n">01</div><div class="fw-nm">Monitor</div></div>
+    <div class="fw-step"><div class="fw-n">02</div><div class="fw-nm">Detect</div></div>
+    <div class="fw-step"><div class="fw-n">03</div><div class="fw-nm">Investigate</div></div>
+    <div class="fw-step"><div class="fw-n">04</div><div class="fw-nm">Hypothesise</div></div>
+    <div class="fw-step"><div class="fw-n">05</div><div class="fw-nm">Act</div></div>
+  </div>
+
+  <div class="cats">
+    <div class="cat-card cat-hv" onclick="filterCat('high-value',this)"><div class="cat-label">Category</div><div class="cat-count">3</div><div class="cat-name">High Value</div></div>
+    <div class="cat-card cat-st" onclick="filterCat('stable',this)"><div class="cat-label">Category</div><div class="cat-count">4</div><div class="cat-name">Stable</div></div>
+    <div class="cat-card cat-ar" onclick="filterCat('at-risk',this)"><div class="cat-label">Category</div><div class="cat-count">2</div><div class="cat-name">At Risk</div></div>
+    <div class="cat-card cat-cr" onclick="filterCat('critical',this)"><div class="cat-label">Category</div><div class="cat-count">1</div><div class="cat-name">Critical</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterCat('all',this)">All accounts</button>
+    <button class="filter-btn" onclick="filterCat('high-value',this)">High Value</button>
+    <button class="filter-btn" onclick="filterCat('stable',this)">Stable</button>
+    <button class="filter-btn" onclick="filterCat('at-risk',this)">At Risk</button>
+    <button class="filter-btn" onclick="filterCat('critical',this)">Critical</button>
+  </div>
+
+  <div class="legend">
+    <span class="legend-title">Signal dots:</span>
+    <span class="legend-item"><div class="legend-dot" style="background:#378ADD"></div> Adoption & usage</span>
+    <span class="legend-item"><div class="legend-dot" style="background:#7F77DD"></div> Engagement</span>
+    <span class="legend-item"><div class="legend-dot" style="background:#D85A30"></div> Support tickets</span>
+    <span class="legend-item"><div class="legend-dot" style="background:#D4537E"></div> CSAT / NPS</span>
+    <div class="legend-divider"></div>
+    <span class="legend-item"><div class="legend-dot ld-g"></div> Healthy</span>
+    <span class="legend-item"><div class="legend-dot ld-a"></div> Watch</span>
+    <span class="legend-item"><div class="legend-dot ld-r"></div> At risk</span>
+    <span class="legend-item"><div class="legend-dot ld-n"></div> No data</span>
+  </div>
+
+  <table class="accts">
+    <thead>
+      <tr>
+        <th>Account</th><th>Category</th><th style="min-width:130px">Signals</th><th>NRR</th><th>Renewal in</th><th>CSAT</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="acct-row" data-cat="high-value" onclick="openPanel('meridian')">
+        <td><strong style="color:#f0ede8">Meridian HQ</strong><br><span style="font-size:12px;color:#6b6966">Enterprise · 14 months</span></td>
+        <td><span class="pill p-hv">High Value</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div></div></td>
+        <td><span class="c-g">131%</span></td><td><span class="c-g">74 days</span></td><td><span class="c-g">9.2</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="high-value" onclick="openPanel('pinnacle')">
+        <td><strong style="color:#f0ede8">Pinnacle Systems</strong><br><span style="font-size:12px;color:#6b6966">Enterprise · 22 months</span></td>
+        <td><span class="pill p-hv">High Value</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot da"></div><div class="dot da"></div><div class="dot da"></div><div class="dot da"></div></div></td>
+        <td><span class="c-g">118%</span></td><td><span class="c-g">61 days</span></td><td><span class="c-a">7.8</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="high-value" onclick="openPanel('crestline')">
+        <td><strong style="color:#f0ede8">Crestline Inc</strong><br><span style="font-size:12px;color:#6b6966">Mid-market · 11 months</span></td>
+        <td><span class="pill p-hv">High Value</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div></div></td>
+        <td><span class="c-g">124%</span></td><td><span class="c-g">92 days</span></td><td><span class="c-g">9.1</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="stable" onclick="openPanel('nexus')">
+        <td><strong style="color:#f0ede8">Nexus Co</strong><br><span style="font-size:12px;color:#6b6966">Mid-market · 9 months</span></td>
+        <td><span class="pill p-st">Stable</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot dg"></div><div class="dot dg"></div><div class="dot dn"></div><div class="dot dg"></div></div></td>
+        <td><span class="c-g">107%</span></td><td><span class="c-g">88 days</span></td><td><span class="c-g">8.1</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="stable" onclick="openPanel('brightfield')">
+        <td><strong style="color:#f0ede8">Brightfield</strong><br><span style="font-size:12px;color:#6b6966">Mid-market · 7 months</span></td>
+        <td><span class="pill p-st">Stable</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div></div></td>
+        <td><span class="c-g">104%</span></td><td><span class="c-g">112 days</span></td><td><span class="c-g">8.4</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="stable" onclick="openPanel('irongate')">
+        <td><strong style="color:#f0ede8">Irongate Ltd</strong><br><span style="font-size:12px;color:#6b6966">SMB · 15 months</span></td>
+        <td><span class="pill p-st">Stable</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div><div class="dot dg"></div></div></td>
+        <td><span class="c-g">112%</span></td><td><span class="c-g">45 days</span></td><td><span class="c-g">8.7</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="stable" onclick="openPanel('solara')">
+        <td><strong style="color:#f0ede8">Solara Inc</strong><br><span style="font-size:12px;color:#6b6966">SMB · 6 months</span></td>
+        <td><span class="pill p-st">Stable</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot da"></div><div class="dot da"></div><div class="dot da"></div><div class="dot da"></div></div></td>
+        <td><span class="c-g">101%</span></td><td><span class="c-g">134 days</span></td><td><span class="c-a">7.6</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="at-risk" onclick="openPanel('driftwood')">
+        <td><strong style="color:#f0ede8">Driftwood HQ</strong><br><span style="font-size:12px;color:#6b6966">Mid-market · 8 months</span></td>
+        <td><span class="pill p-ar">At Risk</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot da"></div><div class="dot da"></div><div class="dot dr"></div><div class="dot da"></div></div></td>
+        <td><span class="c-a">96%</span></td><td><span class="c-a">52 days</span></td><td><span class="c-a">6.8</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="at-risk" onclick="openPanel('halcyon')">
+        <td><strong style="color:#f0ede8">Halcyon Tech</strong><br><span style="font-size:12px;color:#6b6966">SMB · 12 months</span></td>
+        <td><span class="pill p-ar">At Risk</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot dr"></div><div class="dot dr"></div><div class="dot dn"></div><div class="dot da"></div></div></td>
+        <td><span class="c-a">93%</span></td><td><span class="c-a">38 days</span></td><td><span class="c-a">6.4</span></td>
+      </tr>
+      <tr class="acct-row" data-cat="critical" onclick="openPanel('vortex')">
+        <td><strong style="color:#f0ede8">Vortex Labs</strong><br><span style="font-size:12px;color:#6b6966">Enterprise · 18 months</span></td>
+        <td><span class="pill p-cr">Critical</span></td>
+        <td><div style="display:flex;gap:4px;margin-bottom:3px"><div class="dot" style="background:#378ADD"></div><div class="dot" style="background:#7F77DD"></div><div class="dot" style="background:#D85A30"></div><div class="dot" style="background:#D4537E"></div></div><div class="dots"><div class="dot dr"></div><div class="dot dr"></div><div class="dot dr"></div><div class="dot dr"></div></div></td>
+        <td><span class="c-r">81%</span></td><td><span class="c-r">24 days</span></td><td><span class="c-r">5.4</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div id="panel-placeholder" class="placeholder-text">Click any account row to open its full health profile.</div>
+
+  <!-- MERIDIAN -->
+  <div class="panel" id="panel-meridian">
+    <div class="panel-hdr"><div><p class="panel-title">Meridian HQ</p><p class="panel-meta">Enterprise · 14 months · <span class="c-b">High Value</span></p></div><button class="close-btn" onclick="closePanel('meridian')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('meridian','health',this)">Health</button><button class="tab" onclick="st('meridian','rel',this)">Relationship</button><button class="tab" onclick="st('meridian','growth',this)">Growth</button><button class="tab" onclick="st('meridian','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="meridian-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-g">91%</div><div class="card-sub">Above target</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-g" style="width:91%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-g">18/20</div><div class="card-sub">Consistent 3 months</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-g">9.2</div><div class="card-sub">Up from 8.7 last quarter</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-g">61</div><div class="card-sub">Strong promoter</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div><div class="no-tickets">No open tickets — account running cleanly.</div>
+    </div>
+    <div class="tc" id="meridian-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-g">Same day</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-g">4 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-g">5 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-g">High engagement</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Sarah Chen — VP Revenue (Champion)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Scale revenue ops without headcount increase — 40% efficiency gain by Q3</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Board wants faster ROI visibility — needs better executive dashboards</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Revenue per rep ratio; pipeline forecast accuracy above 90%</span></div>
+      </div>
+    </div>
+    <div class="tc" id="meridian-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-g">131%</div><div class="card-sub">Strong expansion trajectory</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">140%</div><div class="card-sub">Executive dashboard upgrade path</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 74 days remaining</div><div class="ren-track"><div class="ren-fill bg-g" style="width:55%"></div></div><div class="ren-dates"><span>Start: Oct 2023</span><span class="c-g">Renewal: Mar 14, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list">
+        <div class="win"><div><div class="win-text">Pipeline forecast accuracy improved from 67% to 93% in 12 months</div><span class="wt wt-n">Notable</span></div></div>
+        <div class="win"><div><div class="win-text">Expanded from 15 to 20 seats at month 9</div><span class="wt wt-i">Incremental</span></div></div>
+        <div class="win"><div><div class="win-text">Sarah presented platform ROI at board meeting — unprompted</div><span class="wt wt-i">Incremental</span></div></div>
+      </div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list">
+        <div class="exp"><div class="exp-title">Executive reporting module</div><div class="exp-detail">Sarah needs board-ready dashboards — natural upgrade path. Timing: next QBR.</div></div>
+        <div class="exp"><div class="exp-title">Referral conversation</div><div class="exp-detail">Sarah has mentioned 2 peers at similar-stage companies. Structured referral ask is overdue.</div></div>
+      </div>
+    </div>
+    <div class="tc" id="meridian-action">
+      <span class="sp sp-grow">Strategy: Grow</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Meridian is performing strongly across every metric. Sarah's biggest remaining frustration is executive visibility — the board wants faster ROI reporting. That's not a complaint, it's an expansion signal. She's already presenting the platform at board level. The renewal is won. The question is how much we grow it.</div></div>
+      <div class="act-box act-grow"><div class="act-label al-g">Planned action</div><div class="at-g">Lead with the forecast accuracy win — frame it in board language. Introduce the executive reporting module as the natural next step. Plant the referral conversation after the expansion discussion. Goal: expansion committed, referral conversation scheduled.</div></div>
+    </div>
+  </div>
+
+  <!-- PINNACLE -->
+  <div class="panel" id="panel-pinnacle">
+    <div class="panel-hdr"><div><p class="panel-title">Pinnacle Systems</p><p class="panel-meta">Enterprise · 22 months · <span class="c-b">High Value</span></p></div><button class="close-btn" onclick="closePanel('pinnacle')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('pinnacle','health',this)">Health</button><button class="tab" onclick="st('pinnacle','rel',this)">Relationship</button><button class="tab" onclick="st('pinnacle','growth',this)">Growth</button><button class="tab" onclick="st('pinnacle','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="pinnacle-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-a">83%</div><div class="card-sub">Slight dip from 87%</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-a" style="width:83%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-a">21/26</div><div class="card-sub">5 seats inactive this month</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-a">7.8</div><div class="card-sub">Slipped from 8.6 — watch</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-a">29</div><div class="card-sub">Passive — was promoter at month 18</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div>
+      <div class="ticket-list"><div class="ticket"><div><div class="ticket-info">Reporting export format mismatch</div><div class="ticket-cat">Technical · Medium priority</div></div><div class="ticket-age age-warn">8 days open</div></div></div>
+    </div>
+    <div class="tc" id="pinnacle-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-a">2–3 days</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-a">3 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-a">22 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-a">Quieter than usual</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Marcus Webb — COO (Champion)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Consolidate tools — reduce tech stack by 30% before fiscal year end</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">New team members onboarded 6 weeks ago — still not active on platform</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Full team utilisation; measurable reduction in manual workflow time</span></div>
+      </div>
+    </div>
+    <div class="tc" id="pinnacle-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-g">118%</div><div class="card-sub">Healthy but growth slowing</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">125%</div><div class="card-sub">Consolidation play</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 61 days remaining</div><div class="ren-track"><div class="ren-fill bg-g" style="width:66%"></div></div><div class="ren-dates"><span>Start: Mar 2023</span><span class="c-g">Renewal: Feb 20, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list">
+        <div class="win"><div><div class="win-text">Replaced 2 legacy tools — saving $2,400/month in stack costs</div><span class="wt wt-n">Notable</span></div></div>
+        <div class="win"><div><div class="win-text">Added 6 seats at month 14 after positive team feedback</div><span class="wt wt-i">Incremental</span></div></div>
+      </div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">Activate 5 inactive seats</div><div class="exp-detail">New team members onboarded 6 weeks ago — still not using platform. A focused session would close this gap and protect NRR.</div></div></div>
+    </div>
+    <div class="tc" id="pinnacle-action">
+      <span class="sp sp-amber">Strategy: Grow — protect first</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Pinnacle is drifting quietly — not at risk yet but signals are early warnings. Marcus onboarded new team members but never followed through. If left unaddressed, this account slides from high value to at risk within 60 days.</div></div>
+      <div class="act-box act-amber"><div class="act-label al-a">Planned action</div><div class="at-a">Don't wait for Marcus to raise the inactive seats — bring it up first. Offer structured onboarding for the new team. Resolve the technical ticket before the call. Use the $2,400/month stack saving as the renewal anchor.</div></div>
+    </div>
+  </div>
+
+  <!-- CRESTLINE -->
+  <div class="panel" id="panel-crestline">
+    <div class="panel-hdr"><div><p class="panel-title">Crestline Inc</p><p class="panel-meta">Mid-market · 11 months · <span class="c-b">High Value</span></p></div><button class="close-btn" onclick="closePanel('crestline')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('crestline','health',this)">Health</button><button class="tab" onclick="st('crestline','rel',this)">Relationship</button><button class="tab" onclick="st('crestline','growth',this)">Growth</button><button class="tab" onclick="st('crestline','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="crestline-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-g">94%</div><div class="card-sub">Above target</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-g" style="width:94%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-g">7/8</div><div class="card-sub">Consistent 3 months</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-g">9.1</div><div class="card-sub">Up from 8.4 last quarter</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-g">52</div><div class="card-sub">Strong promoter</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div>
+      <div class="ticket-list"><div class="ticket"><div><div class="ticket-info">Bulk CSV export feature request</div><div class="ticket-cat">Feature request · Low priority</div></div><div class="ticket-age age-ok">1 day open</div></div></div>
+    </div>
+    <div class="tc" id="crestline-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-g">Within hours</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-g">4 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-g">6 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-g">High — brings agenda items</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">James Obi — Founder & CEO (Champion + Decision maker)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Scale operations without adding headcount — automate wherever possible</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Bulk export not available yet — minor friction in weekly reporting</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Hours saved per week; revenue per employee ratio improving QoQ</span></div>
+      </div>
+    </div>
+    <div class="tc" id="crestline-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-g">124%</div><div class="card-sub">2 seats + plan upgrade</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">130%</div><div class="card-sub">Enterprise plan path in Q3</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 92 days remaining</div><div class="ren-track"><div class="ren-fill bg-g" style="width:38%"></div></div><div class="ren-dates"><span>Start: Jan 2024</span><span class="c-g">Renewal: Apr 1, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list">
+        <div class="win"><div><div class="win-text">Revenue grew 31% while headcount stayed flat — attributed to platform</div><span class="wt wt-n">Notable</span></div></div>
+        <div class="win"><div><div class="win-text">Upgraded from Starter to Growth plan at month 7 — unprompted</div><span class="wt wt-n">Notable</span></div></div>
+        <div class="win"><div><div class="win-text">James referred 1 peer — currently in evaluation</div><span class="wt wt-i">Incremental</span></div></div>
+      </div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list">
+        <div class="exp"><div class="exp-title">Structured referral programme</div><div class="exp-detail">James referred one peer organically. A direct referral conversation is overdue.</div></div>
+        <div class="exp"><div class="exp-title">Enterprise plan — Q3 horizon</div><div class="exp-detail">At current growth rate, Crestline will outgrow Growth plan within 2 quarters. Plant the seed now.</div></div>
+      </div>
+    </div>
+    <div class="tc" id="crestline-action">
+      <span class="sp sp-grow">Strategy: Grow</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Crestline is the healthiest account in the portfolio. The renewal is already won. The real opportunity is formalising the advocacy — James is a natural referrer but needs a structured ask.</div></div>
+      <div class="act-box act-grow"><div class="act-label al-g">Planned action</div><div class="at-g">Open with the headcount-to-revenue milestone. Update on bulk export timeline. Introduce the referral conversation directly. Close by planting the Enterprise plan seed for Q3.</div></div>
+    </div>
+  </div>
+
+  <!-- NEXUS -->
+  <div class="panel" id="panel-nexus">
+    <div class="panel-hdr"><div><p class="panel-title">Nexus Co</p><p class="panel-meta">Mid-market · 9 months · <span class="c-g">Stable</span></p></div><button class="close-btn" onclick="closePanel('nexus')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('nexus','health',this)">Health</button><button class="tab" onclick="st('nexus','rel',this)">Relationship</button><button class="tab" onclick="st('nexus','growth',this)">Growth</button><button class="tab" onclick="st('nexus','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="nexus-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-g">78%</div><div class="card-sub">On target</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-g" style="width:78%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-g">9/12</div><div class="card-sub">Stable 6 weeks</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-g">8.1</div><div class="card-sub">Consistent</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-g">34</div><div class="card-sub">Passive trending promoter</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div>
+      <div class="ticket-list"><div class="ticket"><div><div class="ticket-info">API rate limit query</div><div class="ticket-cat">Technical · Low priority</div></div><div class="ticket-age age-ok">2 days open</div></div></div>
+    </div>
+    <div class="tc" id="nexus-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-g">Next day</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-g">4 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-g">12 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-g">Consistent</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Anika Patel — Head of Product (Champion)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Improve cross-team visibility on product roadmap and sprint progress</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">3 team members using workarounds instead of native features</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">All 12 seats active; zero duplicate tools in use</span></div>
+      </div>
+    </div>
+    <div class="tc" id="nexus-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-g">107%</div><div class="card-sub">Slight expansion — 1 seat added</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">115%</div><div class="card-sub">Full seat activation first</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 88 days remaining</div><div class="ren-track"><div class="ren-fill bg-g" style="width:30%"></div></div><div class="ren-dates"><span>Start: Mar 2024</span><span class="c-g">Renewal: Apr 10, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list"><div class="win"><div><div class="win-text">Cross-team sprint visibility improved — fewer status meetings per week</div><span class="wt wt-i">Incremental</span></div></div></div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">Activate 3 passive seats</div><div class="exp-detail">Workaround users are a churn signal in disguise. Converting them unlocks full adoption and strengthens the renewal case.</div></div></div>
+    </div>
+    <div class="tc" id="nexus-action">
+      <span class="sp sp-blue">Strategy: Maintain & nudge</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Nexus is healthy but slightly under-utilised. The 3 workaround users aren't a risk today but could become one at renewal if Anika can't show full team adoption to her leadership.</div></div>
+      <div class="act-box act-grow"><div class="act-label al-g">Planned action</div><div class="at-g">Address the workaround users directly — offer a 30-minute native feature walkthrough. Once full adoption is reached, use that milestone as the anchor for an expansion conversation at the next QBR.</div></div>
+    </div>
+  </div>
+
+  <!-- BRIGHTFIELD -->
+  <div class="panel" id="panel-brightfield">
+    <div class="panel-hdr"><div><p class="panel-title">Brightfield</p><p class="panel-meta">Mid-market · 7 months · <span class="c-g">Stable</span></p></div><button class="close-btn" onclick="closePanel('brightfield')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('brightfield','health',this)">Health</button><button class="tab" onclick="st('brightfield','rel',this)">Relationship</button><button class="tab" onclick="st('brightfield','growth',this)">Growth</button><button class="tab" onclick="st('brightfield','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="brightfield-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-g">81%</div><div class="card-sub">Above target</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-g" style="width:81%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-g">11/14</div><div class="card-sub">Consistent</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-g">8.4</div><div class="card-sub">Steady</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-g">41</div><div class="card-sub">Promoter</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div><div class="no-tickets">No open tickets.</div>
+    </div>
+    <div class="tc" id="brightfield-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-g">Same day</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-g">3 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-g">9 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-g">Consistent</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Tom Reyes — Director of Ops (Champion)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Consolidate reporting across 3 departments into one view</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Finance team not yet onboarded — cross-dept view incomplete</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Single dashboard for all 3 depts; weekly reporting time under 2 hours</span></div>
+      </div>
+    </div>
+    <div class="tc" id="brightfield-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-g">104%</div><div class="card-sub">Minimal expansion so far</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">120%</div><div class="card-sub">Finance team onboarding = expansion</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 112 days remaining</div><div class="ren-track"><div class="ren-fill bg-g" style="width:22%"></div></div><div class="ren-dates"><span>Start: May 2024</span><span class="c-g">Renewal: May 12, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list"><div class="win"><div><div class="win-text">Ops and Marketing depts fully onboarded in first 60 days</div><span class="wt wt-i">Incremental</span></div></div></div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">Finance team onboarding</div><div class="exp-detail">Onboarding Finance unlocks Tom's core goal and adds 4–5 seats. Natural next chapter — timing is right at month 8.</div></div></div>
+    </div>
+    <div class="tc" id="brightfield-action">
+      <span class="sp sp-blue">Strategy: Maintain & expand</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Tom's remaining frustration — the incomplete cross-dept view — is actually the expansion opportunity. He needs the Finance team onboarded to achieve his own goal. This isn't a hard sell; it's completing the job we started.</div></div>
+      <div class="act-box act-grow"><div class="act-label al-g">Planned action</div><div class="at-g">Revisit Tom's original goal. Position Finance team onboarding as the final step to achieving it. Offer to run the onboarding session directly.</div></div>
+    </div>
+  </div>
+
+  <!-- IRONGATE -->
+  <div class="panel" id="panel-irongate">
+    <div class="panel-hdr"><div><p class="panel-title">Irongate Ltd</p><p class="panel-meta">SMB · 15 months · <span class="c-g">Stable</span></p></div><button class="close-btn" onclick="closePanel('irongate')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('irongate','health',this)">Health</button><button class="tab" onclick="st('irongate','rel',this)">Relationship</button><button class="tab" onclick="st('irongate','growth',this)">Growth</button><button class="tab" onclick="st('irongate','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="irongate-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-g">88%</div><div class="card-sub">Strong</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-g" style="width:88%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-g">6/7</div><div class="card-sub">Consistent</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-g">8.7</div><div class="card-sub">Steady</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-g">44</div><div class="card-sub">Promoter</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div><div class="no-tickets">No open tickets.</div>
+    </div>
+    <div class="tc" id="irongate-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-g">Same day</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-g">4 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-g">8 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-g">Reliable — always prepared</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Nina Hartley — Operations Manager (Champion)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Streamline vendor management — reduce approval cycle from 5 days to 2</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Senior leadership still approves manually — bottleneck not yet resolved</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Approval cycle time; vendor onboarding time reduced by 50%</span></div>
+      </div>
+    </div>
+    <div class="tc" id="irongate-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-g">112%</div><div class="card-sub">Steady expansion</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">115%</div><div class="card-sub">Leadership approval feature</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 45 days remaining</div><div class="ren-track"><div class="ren-fill bg-g" style="width:75%"></div></div><div class="ren-dates"><span>Start: Nov 2023</span><span class="c-g">Renewal: Jan 28, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list">
+        <div class="win"><div><div class="win-text">Vendor onboarding time reduced from 9 days to 3.5 days</div><span class="wt wt-n">Notable</span></div></div>
+        <div class="win"><div><div class="win-text">Added 1 seat at month 10 — team restructure</div><span class="wt wt-i">Incremental</span></div></div>
+      </div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">Leadership approval workflow add-on</div><div class="exp-detail">Nina's remaining bottleneck is leadership sign-off. An approval workflow feature directly solves this.</div></div></div>
+    </div>
+    <div class="tc" id="irongate-action">
+      <span class="sp sp-blue">Strategy: Maintain & renew</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Irongate is a reliable, low-maintenance account. The renewal is straightforward. The one remaining frustration is both a product gap and an expansion opportunity.</div></div>
+      <div class="act-box act-grow"><div class="act-label al-g">Planned action</div><div class="at-g">Lead with the vendor onboarding win. Confirm renewal terms early. Then introduce the leadership approval workflow as the solution to her remaining frustration.</div></div>
+    </div>
+  </div>
+
+  <!-- SOLARA -->
+  <div class="panel" id="panel-solara">
+    <div class="panel-hdr"><div><p class="panel-title">Solara Inc</p><p class="panel-meta">SMB · 6 months · <span class="c-g">Stable</span></p></div><button class="close-btn" onclick="closePanel('solara')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('solara','health',this)">Health</button><button class="tab" onclick="st('solara','rel',this)">Relationship</button><button class="tab" onclick="st('solara','growth',this)">Growth</button><button class="tab" onclick="st('solara','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="solara-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-a">69%</div><div class="card-sub">Below 75% target</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-a" style="width:69%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-a">5/8</div><div class="card-sub">3 seats inactive since month 2</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-a">7.6</div><div class="card-sub">Flat — no movement</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-a">22</div><div class="card-sub">Passive</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div>
+      <div class="ticket-list"><div class="ticket"><div><div class="ticket-info">Login issue for 2 inactive users</div><div class="ticket-cat">Technical · Medium priority</div></div><div class="ticket-age age-warn">6 days open</div></div></div>
+    </div>
+    <div class="tc" id="solara-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-a">2–3 days</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-g">3 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-a">19 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-a">Attended — minimal input</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Preet Sharma — Founder (Champion)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Get full team on one system before Series A due diligence</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">3 team members not logging in — suspects login friction is the blocker</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">100% seat adoption; clean data for investor reporting</span></div>
+      </div>
+    </div>
+    <div class="tc" id="solara-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-g">101%</div><div class="card-sub">Barely expanding</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">110%</div><div class="card-sub">Full adoption unlocks Series A story</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 134 days remaining</div><div class="ren-track"><div class="ren-fill bg-g" style="width:12%"></div></div><div class="ren-dates"><span>Start: Jun 2024</span><span class="c-g">Renewal: May 30, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list"><div class="win"><div><div class="win-text">5 of 8 seats fully active and using platform weekly</div><span class="wt wt-i">Incremental</span></div></div></div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">Series A investor reporting module</div><div class="exp-detail">Preet needs clean data for due diligence. Full adoption + reporting module directly serves his most urgent goal.</div></div></div>
+    </div>
+    <div class="tc" id="solara-action">
+      <span class="sp sp-blue">Strategy: Maintain — fix friction fast</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Solara's adoption gap isn't disengagement — it's a login issue sitting unresolved for 6 days. Fixing it quickly will have an outsized impact on Preet's trust and the account's trajectory.</div></div>
+      <div class="act-box act-grow"><div class="act-label al-g">Planned action</div><div class="at-g">Resolve the login ticket before the call. Open by confirming the fix. Connect full adoption to his Series A narrative. Introduce the investor reporting module as a natural next step.</div></div>
+    </div>
+  </div>
+
+  <!-- DRIFTWOOD -->
+  <div class="panel" id="panel-driftwood">
+    <div class="panel-hdr"><div><p class="panel-title">Driftwood HQ</p><p class="panel-meta">Mid-market · 8 months · <span class="c-a">At Risk</span></p></div><button class="close-btn" onclick="closePanel('driftwood')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('driftwood','health',this)">Health</button><button class="tab" onclick="st('driftwood','rel',this)">Relationship</button><button class="tab" onclick="st('driftwood','growth',this)">Growth</button><button class="tab" onclick="st('driftwood','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="driftwood-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-a">58%</div><div class="card-sub">Dropped from 71% last month</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-a" style="width:58%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-a">6/11</div><div class="card-sub">5 seats inactive</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-a">6.8</div><div class="card-sub">Down from 8.1 two months ago</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-a">7</div><div class="card-sub">Passive — near detractor</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div>
+      <div class="ticket-list">
+        <div class="ticket"><div><div class="ticket-info">Workflow automation not triggering correctly</div><div class="ticket-cat">Technical · High priority</div></div><div class="ticket-age age-risk">12 days open</div></div>
+        <div class="ticket"><div><div class="ticket-info">User permission settings query</div><div class="ticket-cat">Configuration · Low priority</div></div><div class="ticket-age age-ok">3 days open</div></div>
+      </div>
+    </div>
+    <div class="tc" id="driftwood-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-a">3–5 days</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-a">2 of 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-a">31 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-r">Skipped last QBR</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Claire Fontaine — Head of CS (Champion)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Automate tier-1 support responses — reduce team workload by 30%</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Workflow automation broken for 12 days — directly blocks her core goal</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Tier-1 ticket deflection rate; avg response time under 2 hours</span></div>
+      </div>
+    </div>
+    <div class="tc" id="driftwood-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-a">96%</div><div class="card-sub">Contraction — 1 seat removed</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">105%</div><div class="card-sub">Stabilise first — grow later</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 52 days remaining</div><div class="ren-track"><div class="ren-fill bg-a" style="width:71%"></div></div><div class="ren-dates"><span>Start: Apr 2024</span><span class="c-a">Renewal: Feb 6, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list"><div class="win"><div><div class="win-text">Tier-1 ticket deflection improved 18% in first 90 days</div><span class="wt wt-i">Incremental</span></div></div></div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">No expansion conversations until stabilised</div><div class="exp-detail">Account needs to be healthy before growth is introduced. Expansion talk now would feel tone-deaf given the broken automation.</div></div></div>
+    </div>
+    <div class="tc" id="driftwood-action">
+      <span class="sp sp-amber">Rescue: Value reinforcement</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Driftwood's disengagement is directly caused by the broken workflow automation. The 18% improvement in the first 90 days has been forgotten because the last 12 days have been broken. The renewal is at risk — 52 days out.</div></div>
+      <div class="act-box act-amber"><div class="act-label al-a">Planned action — value reinforcement</div><div class="at-a">Fix the automation before the call — non-negotiable. Open by acknowledging the delay and owning it. Use the wins log to rebuild the value narrative. Do not mention expansion or renewal until Claire feels heard and supported.</div></div>
+    </div>
+  </div>
+
+  <!-- HALCYON -->
+  <div class="panel" id="panel-halcyon">
+    <div class="panel-hdr"><div><p class="panel-title">Halcyon Tech</p><p class="panel-meta">SMB · 12 months · <span class="c-a">At Risk</span></p></div><button class="close-btn" onclick="closePanel('halcyon')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('halcyon','health',this)">Health</button><button class="tab" onclick="st('halcyon','rel',this)">Relationship</button><button class="tab" onclick="st('halcyon','growth',this)">Growth</button><button class="tab" onclick="st('halcyon','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="halcyon-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-a">54%</div><div class="card-sub">Was 76% at month 6</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-a" style="width:54%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-r">3/7</div><div class="card-sub">Dropped significantly</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-a">6.4</div><div class="card-sub">Declining steadily</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-a">4</div><div class="card-sub">Near detractor</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div>
+      <div class="ticket-list"><div class="ticket"><div><div class="ticket-info">No tickets raised — silence is the signal</div><div class="ticket-cat">Disengagement indicator</div></div><div class="ticket-age age-warn">—</div></div></div>
+    </div>
+    <div class="tc" id="halcyon-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-r">7–10 days</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-r">1 of last 4</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-r">47 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-r">Skipped last 2</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Ryan Moss — CEO (Champion + Decision maker)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Reduce operational overhead as team scales from 7 to 15</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Team stopped using platform after a key employee left — no internal champion</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Time saved per week; onboarding new hires faster</span></div>
+      </div>
+    </div>
+    <div class="tc" id="halcyon-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-a">93%</div><div class="card-sub">Contraction — usage declining</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val" style="color:#f0ede8">100%</div><div class="card-sub">Stabilise — no growth target yet</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 38 days remaining</div><div class="ren-track"><div class="ren-fill bg-a" style="width:79%"></div></div><div class="ren-dates"><span>Start: Jan 2024</span><span class="c-a">Renewal: Jan 2, 2025</span></div></div>
+      <div class="sec-label">Wins log</div>
+      <div class="wins-list"><div class="win"><div><div class="win-text">Onboarding time for new hires cut from 2 weeks to 4 days in first 6 months</div><span class="wt wt-n">Notable</span></div></div></div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">Re-onboard for team scaling</div><div class="exp-detail">Ryan is hiring — going from 7 to 15. Re-framing the platform as the onboarding engine for new hires is the most relevant value proposition right now.</div></div></div>
+    </div>
+    <div class="tc" id="halcyon-action">
+      <span class="sp sp-amber">Rescue: Re-engagement</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Halcyon's disengagement isn't about the product — it's about losing the internal champion. Usage collapsed when the key employee left. The 4-day onboarding win is real and directly relevant to Ryan's current hiring push.</div></div>
+      <div class="act-box act-amber"><div class="act-label al-a">Planned action — re-engagement</div><div class="at-a">Don't open with the renewal. Open with direct acknowledgement: "I noticed usage has dropped and I want to understand why before we talk about anything else." Use the onboarding win as the bridge. Offer a fresh onboarding session for new hires as the re-entry point.</div></div>
+    </div>
+  </div>
+
+  <!-- VORTEX -->
+  <div class="panel" id="panel-vortex">
+    <div class="panel-hdr"><div><p class="panel-title">Vortex Labs</p><p class="panel-meta">Enterprise · 18 months · <span class="c-r">Critical</span></p></div><button class="close-btn" onclick="closePanel('vortex')">✕ Close</button></div>
+    <div class="tabs"><button class="tab active" onclick="st('vortex','health',this)">Health</button><button class="tab" onclick="st('vortex','rel',this)">Relationship</button><button class="tab" onclick="st('vortex','growth',this)">Growth</button><button class="tab" onclick="st('vortex','action',this)">Hypothesis & action</button></div>
+    <div class="tc active" id="vortex-health">
+      <div class="layer">
+        <div class="card"><div class="card-label">Adoption</div><div class="card-val c-r">41%</div><div class="card-sub">Was 79% at month 12</div><div class="bar-wrap"><div class="bar-track"><div class="bar-fill bg-r" style="width:41%"></div></div></div></div>
+        <div class="card"><div class="card-label">Weekly active users</div><div class="card-val c-r">4/14</div><div class="card-sub">Down from 12 last quarter</div></div>
+        <div class="card"><div class="card-label">CSAT</div><div class="card-val c-r">5.4</div><div class="card-sub">Lowest in portfolio</div></div>
+        <div class="card"><div class="card-label">NPS</div><div class="card-val c-r">-11</div><div class="card-sub">Active detractor</div></div>
+      </div>
+      <div class="sec-label">Open support tickets</div>
+      <div class="ticket-list">
+        <div class="ticket"><div><div class="ticket-info">Core reporting dashboard not loading</div><div class="ticket-cat">Technical · Critical priority</div></div><div class="ticket-age age-risk">21 days open</div></div>
+        <div class="ticket"><div><div class="ticket-info">Data sync failure — CRM integration</div><div class="ticket-cat">Integration · High priority</div></div><div class="ticket-age age-risk">14 days open</div></div>
+        <div class="ticket"><div><div class="ticket-info">User access permissions broken post-update</div><div class="ticket-cat">Technical · High priority</div></div><div class="ticket-age age-warn">7 days open</div></div>
+      </div>
+    </div>
+    <div class="tc" id="vortex-rel">
+      <div class="eng-grid">
+        <div class="eng-item"><span class="eng-label">Email response</span><span class="eng-val c-r">No response (14 days)</span></div>
+        <div class="eng-item"><span class="eng-label">Calls attended</span><span class="eng-val c-r">0 of last 3</span></div>
+        <div class="eng-item"><span class="eng-label">Last feedback</span><span class="eng-val c-r">58 days ago</span></div>
+        <div class="eng-item"><span class="eng-label">QBR participation</span><span class="eng-val c-r">Cancelled last 2</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">David Okafor — VP Operations (Champion — silent)</div>
+        <div class="sh-row"><span class="sh-tag tag-g">Goal</span><span class="sh-text">Real-time operational visibility across all business units before Q3 board review</span></div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Dashboard broken 21 days — board review in 18 days. Platform failed at the worst possible moment.</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Board-ready reporting; cross-unit data accuracy above 98%</span></div>
+      </div>
+      <div class="sh"><div class="sh-name">Linda Marsh — CFO (Economic buyer — now aware)</div>
+        <div class="sh-row"><span class="sh-tag tag-r">Frustration</span><span class="sh-text">Briefed on platform issues by David — questioning renewal ROI directly</span></div>
+        <div class="sh-row"><span class="sh-tag tag-b">Success metric</span><span class="sh-text">Cost justification; measurable operational efficiency gains</span></div>
+      </div>
+    </div>
+    <div class="tc" id="vortex-growth">
+      <div class="nrr-wrap">
+        <div class="card"><div class="card-label">Current NRR</div><div class="card-val c-r">81%</div><div class="card-sub">Significant contraction</div></div>
+        <div class="card"><div class="card-label">NRR target</div><div class="card-val c-r">100%</div><div class="card-sub">Survival target — retain the contract</div></div>
+      </div>
+      <div class="ren-bar"><div class="ren-label">Renewal — 24 days remaining</div><div class="ren-track"><div class="ren-fill bg-r" style="width:92%"></div></div><div class="ren-dates"><span>Start: Jul 2023</span><span class="c-r">Renewal: Jan 3, 2025</span></div></div>
+      <div class="sec-label">Wins log — use this to rebuild the value case</div>
+      <div class="wins-list">
+        <div class="win"><div><div class="win-text">Cross-unit reporting time reduced from 14 hours/week to 3 hours at month 6</div><span class="wt wt-n">Notable</span></div></div>
+        <div class="win"><div><div class="win-text">Integrated with CRM successfully — 100% data accuracy for 9 months</div><span class="wt wt-i">Incremental</span></div></div>
+        <div class="win"><div><div class="win-text">14 of 14 seats active at month 10 — full team adoption achieved</div><span class="wt wt-i">Incremental</span></div></div>
+      </div>
+      <div class="sec-label" style="margin-top:1rem">Expansion opportunities</div>
+      <div class="exp-list"><div class="exp"><div class="exp-title">No expansion — retention only</div><div class="exp-detail">Any expansion conversation before renewal is resolved will damage trust irreparably. Focus is 100% on retaining the contract.</div></div></div>
+    </div>
+    <div class="tc" id="vortex-action">
+      <span class="sp sp-red">Rescue: Executive escalation</span>
+      <div class="hyp-box"><div class="hyp-label">Hypothesis — before the call</div><div class="hyp-text">Vortex is beyond standard AM intervention. Three unresolved critical tickets, a CFO questioning the renewal, and 24 days to contract end. David has gone silent because he's embarrassed. The renewal decision has moved above his pay grade. This requires an executive-to-executive conversation.</div></div>
+      <div class="act-box act-red"><div class="act-label al-r">Planned action — executive escalation</div><div class="at-r">Escalate internally today — get VP of CS on a call with Linda (CFO) within 48 hours. Prepare ROI summary: 11 hours/week saved, 9 months of clean CRM data, full team adoption achieved. Own the technical failures completely. Commit to a resolution timeline with daily updates. Offer a 30-day service credit. Goal: keep David's trust intact and give Linda a financial reason to renew.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var cur=null;
+function openPanel(id){
+  if(cur&&cur!==id)document.getElementById('panel-'+cur).classList.remove('open');
+  var p=document.getElementById('panel-'+id);
+  document.querySelectorAll('.acct-row').forEach(function(r){r.classList.remove('active');});
+  document.querySelectorAll('.acct-row').forEach(function(r){if(r.getAttribute('onclick').indexOf("'"+id+"'")>-1)r.classList.add('active');});
+  if(cur===id&&p.classList.contains('open')){p.classList.remove('open');document.querySelectorAll('.acct-row').forEach(function(r){r.classList.remove('active');});cur=null;document.getElementById('panel-placeholder').style.display='block';return;}
+  document.querySelectorAll('.panel').forEach(function(x){x.classList.remove('open');});
+  p.classList.add('open');document.getElementById('panel-placeholder').style.display='none';cur=id;
+  p.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closePanel(id){
+  document.getElementById('panel-'+id).classList.remove('open');
+  document.querySelectorAll('.acct-row').forEach(function(r){r.classList.remove('active');});
+  cur=null;document.getElementById('panel-placeholder').style.display='block';
+}
+function st(a,t,b){
+  document.querySelectorAll('#panel-'+a+' .tc').forEach(function(x){x.classList.remove('active');});
+  document.querySelectorAll('#panel-'+a+' .tab').forEach(function(x){x.classList.remove('active');});
+  document.getElementById(a+'-'+t).classList.add('active');b.classList.add('active');
+}
+function filterCat(cat,btn){
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.cat-card').forEach(function(c){c.classList.remove('selected');});
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('.acct-row').forEach(function(r){
+    if(cat==='all'||r.getAttribute('data-cat')===cat)r.classList.remove('hidden');
+    else r.classList.add('hidden');
+  });
+  if(cat!=='all'){var m={'high-value':0,'stable':1,'at-risk':2,'critical':3};var cards=document.querySelectorAll('.cat-card');if(m[cat]!==undefined)cards[m[cat]].classList.add('selected');}
+  if(cur){var pr=document.querySelector('[onclick="openPanel(\''+cur+'\')"]');if(pr&&pr.classList.contains('hidden'))closePanel(cur);}
+}
+</script>
+</body>
+</html>
